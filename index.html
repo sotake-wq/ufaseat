@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ufaseat</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <!-- ===== AUTH SCREEN ===== -->
+  <div id="auth-screen" class="screen">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <span class="logo-icon">🪑</span>
+        <h1>ufaseat</h1>
+      </div>
+
+      <div class="tab-group">
+        <button class="tab-btn active" data-tab="login">ログイン</button>
+        <button class="tab-btn" data-tab="register">新規登録</button>
+      </div>
+
+      <form id="auth-form">
+        <div id="name-field" class="field hidden">
+          <label>表示名</label>
+          <input type="text" id="display-name" placeholder="例: 山田 太郎" />
+        </div>
+        <div class="field">
+          <label>メールアドレス</label>
+          <input type="email" id="email" placeholder="example@ufas.co.jp" required />
+        </div>
+        <div class="field">
+          <label>パスワード</label>
+          <input type="password" id="password" placeholder="6文字以上" required />
+        </div>
+        <p id="auth-error" class="error-msg hidden"></p>
+        <button type="submit" class="btn-primary" id="auth-submit">ログイン</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== AVATAR SETUP SCREEN ===== -->
+  <div id="avatar-screen" class="screen hidden">
+    <div class="avatar-card">
+      <h2>アバターをカスタマイズ</h2>
+      <p class="sub">あなたのオフィスキャラクターを設定しよう</p>
+
+      <div class="avatar-preview-wrap">
+        <img id="avatar-preview" src="" alt="アバタープレビュー" />
+      </div>
+
+      <div class="customize-grid">
+        <div class="customize-row">
+          <label>性別スタイル</label>
+          <div class="option-group" id="opt-style">
+            <button class="opt-btn active" data-val="adventurer">ガール</button>
+            <button class="opt-btn" data-val="adventurer-neutral">ニュートラル</button>
+            <button class="opt-btn" data-val="big-smile">ボーイ</button>
+          </div>
+        </div>
+
+        <div class="customize-row">
+          <label>髪型</label>
+          <div class="option-group" id="opt-hair">
+            <button class="opt-btn active" data-val="short01">ショート</button>
+            <button class="opt-btn" data-val="long01">ロング</button>
+            <button class="opt-btn" data-val="curly">カーリー</button>
+            <button class="opt-btn" data-val="bun">お団子</button>
+            <button class="opt-btn" data-val="dreads01">ウェーブ</button>
+          </div>
+        </div>
+
+        <div class="customize-row">
+          <label>髪の色</label>
+          <div class="color-group" id="opt-hair-color">
+            <button class="color-btn active" data-val="0e0e0e" style="background:#0e0e0e"></button>
+            <button class="color-btn" data-val="5c3317" style="background:#5c3317"></button>
+            <button class="color-btn" data-val="d4a017" style="background:#d4a017"></button>
+            <button class="color-btn" data-val="e8b4a0" style="background:#e8b4a0"></button>
+            <button class="color-btn" data-val="b5651d" style="background:#b5651d"></button>
+            <button class="color-btn" data-val="c0c0c0" style="background:#c0c0c0"></button>
+          </div>
+        </div>
+
+        <div class="customize-row">
+          <label>肌の色</label>
+          <div class="color-group" id="opt-skin">
+            <button class="color-btn active" data-val="f8d5c2" style="background:#f8d5c2"></button>
+            <button class="color-btn" data-val="eac393" style="background:#eac393"></button>
+            <button class="color-btn" data-val="d08b5b" style="background:#d08b5b"></button>
+            <button class="color-btn" data-val="ae5d29" style="background:#ae5d29"></button>
+            <button class="color-btn" data-val="614335" style="background:#614335"></button>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="save-avatar">この設定で始める</button>
+    </div>
+  </div>
+
+  <!-- ===== MAIN APP SCREEN ===== -->
+  <div id="app-screen" class="screen hidden">
+    <header class="app-header">
+      <div class="header-left">
+        <span class="logo-icon-sm">🪑</span>
+        <span class="app-title">UFAseat</span>
+      </div>
+      <div class="header-center">
+        <div class="status-selector" id="status-selector">
+          <button class="status-btn active" data-status="in_office">🟢 着席中</button>
+          <button class="status-btn" data-status="away">🟡 離席中</button>
+          <button class="status-btn" data-status="meeting">🔴 会議中</button>
+          <button class="status-btn" data-status="telework">🔵 テレワーク</button>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="me-avatar-wrap" id="me-avatar-wrap">
+          <img id="me-avatar" src="" alt="" />
+          <span id="me-name"></span>
+        </div>
+        <button class="btn-icon" id="edit-avatar-btn" title="アバター編集">✏️</button>
+        <button class="btn-icon" id="logout-btn" title="ログアウト">🚪</button>
+      </div>
+    </header>
+
+    <main class="app-body">
+      <!-- Seat Map -->
+      <div class="map-wrap">
+        <div class="office-map">
+          <div class="map-label-top">窓</div>
+
+          <div class="islands-container">
+            <!-- Island B (奥) -->
+            <div class="island" id="island-B">
+              <div class="island-label">島B（奥）</div>
+              <div class="seat-row row-top" id="row-B-top"></div>
+              <div class="desk-divider"></div>
+              <div class="seat-row row-bottom" id="row-B-bottom"></div>
+            </div>
+
+            <!-- Island A (手前) -->
+            <div class="island" id="island-A">
+              <div class="island-label">島A（手前）</div>
+              <div class="seat-row row-top" id="row-A-top"></div>
+              <div class="desk-divider"></div>
+              <div class="seat-row row-bottom" id="row-A-bottom"></div>
+            </div>
+          </div>
+
+          <div class="map-label-bottom">入り口 →</div>
+        </div>
+      </div>
+
+      <!-- Side Panel -->
+      <aside class="side-panel">
+        <h3 class="panel-title">👥 出社メンバー</h3>
+        <div id="member-list"></div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
