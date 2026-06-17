@@ -36,7 +36,14 @@ const AVATAR_PRESETS = [
   { id: 'wolf',   label: 'ウルフ',          top: 'shortWaved', clothes: 'shirtVNeck',       clothesColor: 'blue01'  },
 ];
 
-const FALLBACK_AVATAR = 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback&top[]=shortFlat&topColor[]=black&skinColor[]=pale&clothesType[]=blazerAndShirt&clothesColor[]=blue02&eyes[]=default&eyebrow[]=defaultNatural&mouth[]=smile&scale=80';
+const FALLBACK_AVATAR = 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback&scale=80';
+
+const SKIN_MAP = {
+  'f8d5c2': 'pale', 'eac393': 'light', 'd08b5b': 'tanned',
+  'ae5d29': 'brown', '614335': 'darkBrown',
+  'pale': 'pale', 'light': 'light', 'tanned': 'tanned',
+  'brown': 'brown', 'dark': 'dark', 'darkBrown': 'darkBrown',
+};
 
 document.addEventListener('error', (e) => {
   if (e.target.tagName === 'IMG' && e.target.src !== FALLBACK_AVATAR) {
@@ -47,9 +54,9 @@ document.addEventListener('error', (e) => {
 function avatarUrl(cfg) {
   if (!cfg) return FALLBACK_AVATAR;
   const preset    = AVATAR_PRESETS.find(p => p.id === cfg.preset) || AVATAR_PRESETS[0];
-  const skinColor = cfg.skinColor || 'pale';
+  const skinColor = SKIN_MAP[cfg.skinColor] || 'pale';
   const seed      = cfg.seed || 'ufas';
-  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&top[]=${preset.top}&topColor[]=black&skinColor[]=${skinColor}&clothesType[]=${preset.clothes}&clothesColor[]=${preset.clothesColor}&eyes[]=default&eyebrow[]=defaultNatural&mouth[]=smile&scale=80`;
+  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&top=${preset.top}&topColor=black&skinColor=${skinColor}&clothesType=${preset.clothes}&eyes=default&eyebrow=default&mouth=smile&scale=80`;
 }
 
 // ===== SCREENS =====
