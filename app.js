@@ -43,6 +43,8 @@ function avatarUrl(cfg) {
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 
+const FALLBACK_AVATAR = avatarUrl(null);
+
 // ===== SCREENS =====
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
