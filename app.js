@@ -29,20 +29,22 @@ let seats = {};          // { [seat_id]: user_id | null }
 
 // ===== AVATAR URL =====
 const AVATAR_PRESETS = [
-  { id: 'short',  label: 'ショート',       top: 'shortFlat',  clothes: 'blazerAndShirt',   clothesColor: 'blue02'  },
-  { id: 'center', label: 'センターパート', top: 'theCaesar',  clothes: 'collarAndSweater', clothesColor: 'gray01'  },
-  { id: 'long',   label: 'ロング',          top: 'straight01', clothes: 'blazerAndSweater', clothesColor: 'black01' },
-  { id: 'curly',  label: 'スペインカール', top: 'curly',      clothes: 'hoodie',           clothesColor: 'heather' },
-  { id: 'wolf',   label: 'ウルフ',          top: 'shortWaved', clothes: 'shirtVNeck',       clothesColor: 'blue01'  },
+  { id: 'short',  label: 'ショート',       hair: 'shortAndRound'   },
+  { id: 'center', label: 'センターパート', hair: 'shortAndStraight' },
+  { id: 'long',   label: 'ロング',          hair: 'longAndLoose'    },
+  { id: 'curly',  label: 'スペインカール', hair: 'curlyAndLong'    },
+  { id: 'wolf',   label: 'ウルフ',          hair: 'shortAndMessy'   },
 ];
 
-const FALLBACK_AVATAR = 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback&scale=80';
+const FALLBACK_AVATAR = 'https://api.dicebear.com/7.x/adventurer/svg?seed=fallback&scale=80';
 
+// 旧フォーマット(hex or DiceBear名)→ adventurer向けhexに統一
 const SKIN_MAP = {
-  'f8d5c2': 'pale', 'eac393': 'light', 'd08b5b': 'tanned',
-  'ae5d29': 'brown', '614335': 'darkBrown',
-  'pale': 'pale', 'light': 'light', 'tanned': 'tanned',
-  'brown': 'brown', 'dark': 'dark', 'darkBrown': 'darkBrown',
+  'pale': 'f8d5c2', 'light': 'eac393', 'tanned': 'c68642',
+  'brown': '8d5524', 'dark': '4a2511', 'darkBrown': '614335',
+  'f8d5c2': 'f8d5c2', 'eac393': 'eac393', 'd08b5b': 'c68642',
+  'ae5d29': '8d5524', '614335': '4a2511', 'c68642': 'c68642',
+  '8d5524': '8d5524', '4a2511': '4a2511',
 };
 
 document.addEventListener('error', (e) => {
@@ -54,9 +56,9 @@ document.addEventListener('error', (e) => {
 function avatarUrl(cfg) {
   if (!cfg) return FALLBACK_AVATAR;
   const preset    = AVATAR_PRESETS.find(p => p.id === cfg.preset) || AVATAR_PRESETS[0];
-  const skinColor = SKIN_MAP[cfg.skinColor] || 'pale';
+  const skinColor = SKIN_MAP[cfg.skinColor] || 'f8d5c2';
   const seed      = cfg.seed || 'ufas';
-  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&top=${preset.top}&topColor=black&skinColor=${skinColor}&clothesType=${preset.clothes}&eyes=default&eyebrow=default&mouth=smile&scale=80`;
+  return `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}&hair=${preset.hair}&hairColor=0e0e0e&skinColor=${skinColor}&scale=80`;
 }
 
 // ===== SCREENS =====
@@ -104,7 +106,7 @@ authForm.addEventListener('submit', async (e) => {
     await db.from('profiles').upsert({
       user_id: data.user.id,
       display_name: name,
-      avatar_config: { preset: 'short', skinColor: 'pale', seed: data.user.id },
+      avatar_config: { preset: 'short', skinColor: 'f8d5c2', seed: data.user.id },
       status: 'in_office',
     });
     me = data.user;
@@ -144,13 +146,13 @@ async function loadMyProfile() {
 }
 
 // ===== AVATAR SETUP =====
-let avatarCfg = { preset: 'short', skinColor: 'pale' };
+let avatarCfg = { preset: 'short', skinColor: 'f8d5c2' };
 
 function showAvatarSetup() {
   if (myProfile?.avatar_config?.preset) {
     avatarCfg = { ...myProfile.avatar_config };
   } else {
-    avatarCfg = { preset: 'short', skinColor: 'pale' };
+    avatarCfg = { preset: 'short', skinColor: 'f8d5c2' };
   }
   avatarCfg.seed = me.id;
   renderPresetGrid();
