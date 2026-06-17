@@ -78,6 +78,10 @@ authForm.addEventListener('submit', async (e) => {
     if (!name) { showError('表示名を入力してください'); return; }
     const { data, error } = await db.auth.signUp({ email, password });
     if (error) { showError(error.message); return; }
+    if (!data.session) {
+      showError('確認メールを送信しました。メールのリンクをクリックしてからログインしてください。（届かない場合はSupabaseのメール確認設定をオフにしてください）');
+      return;
+    }
     // Create profile
     await db.from('profiles').upsert({
       user_id: data.user.id,
@@ -102,8 +106,17 @@ authForm.addEventListener('submit', async (e) => {
 });
 
 function showError(msg) {
-  authError.textContent = msg;
+  authError.textContent = translateAuthError(msg);
   authError.classList.remove('hidden');
+}
+
+function translateAuthError(msg) {
+  if (msg.includes('Invalid login credentials'))  return 'メールアドレスまたはパスワードが正しくありません';
+  if (msg.includes('Email not confirmed'))         return 'メールの確認が完了していません。登録時に届いた確認メールのリンクをクリックしてください';
+  if (msg.includes('User already registered'))     return 'このメールアドレスはすでに登録されています';
+  if (msg.includes('Password should be at least')) return 'パスワードは6文字以上で入力してください';
+  if (msg.includes('rate limit'))                  return 'しばらく時間をおいてから再度お試しください';
+  return msg;
 }
 
 // ===== PROFILE =====
@@ -301,19 +314,32 @@ async function onSeatClick(seatId) {
   if (occupiedBy === me.id) {
     // Leave seat
     await db.from('seats').update({ occupied_by: null, updated_at: new Date().toISOString() }).eq('seat_id', seatId);
+    seats[seatId] = null;
     mySeatId = null;
+    renderAll();
   } else {
     // Leave current seat first
     if (mySeatId) {
       await db.from('seats').update({ occupied_by: null, updated_at: new Date().toISOString() }).eq('seat_id', mySeatId);
+      seats[mySeatId] = null;
+      mySeatId = null;
     }
     // Sit down (only if still empty — conflict guard)
-    const { error } = await db.from('seats')
+    const { data, error } = await db.from('seats')
       .update({ occupied_by: me.id, updated_at: new Date().toISOString() })
       .eq('seat_id', seatId)
-      .is('occupied_by', null);
-    if (error) { console.warn('Seat taken concurrently', error); return; }
+      .is('occupied_by', null)
+      .select();
+    if (error) { console.warn('Seat update error', error); return; }
+    if (!data || data.length === 0) {
+      // 0行更新 = 座席が取られたかDBに行がない → リロードして反映
+      await loadAll();
+      renderAll();
+      return;
+    }
+    seats[seatId] = me.id;
     mySeatId = seatId;
+    renderAll();
   }
 }
 
