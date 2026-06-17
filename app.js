@@ -76,7 +76,7 @@ authForm.addEventListener('submit', async (e) => {
 
   if (authMode === 'register') {
     if (!name) { showError('表示名を入力してください'); return; }
-    const { data, error } = await db.auth.signUp({ email, password });
+    const { data, error } = await db.auth.signUp({ email, password, options: { emailRedirectTo: 'https://ufaseat.vercel.app' } });
     if (error) { showError(error.message); return; }
     if (!data.session) {
       showError('確認メールを送信しました。メールのリンクをクリックしてからログインしてください。（届かない場合はSupabaseのメール確認設定をオフにしてください）');
@@ -156,6 +156,13 @@ function bindOptGroup(groupId, key) {
       btns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       avatarCfg[key] = btn.dataset.val;
+      // スタイルボタンにプリセット髪型が指定されていれば適用
+      if (key === 'style' && btn.dataset.presetHair) {
+        avatarCfg.hair = btn.dataset.presetHair;
+        document.querySelectorAll('#opt-hair .opt-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.val === avatarCfg.hair);
+        });
+      }
       renderAvatarPreview();
     });
   });
