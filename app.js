@@ -84,6 +84,7 @@ authForm.addEventListener('submit', async (e) => {
 
   if (authMode === 'register') {
     if (!name) { showError('表示名を入力してください'); return; }
+    if (!email.endsWith('@ufas.co.jp')) { showError('社内メールアドレス（@ufas.co.jp）でのみ登録できます'); return; }
     const { data, error } = await db.auth.signUp({ email, password });
     if (error) { showError(error.message); return; }
     // Create profile
