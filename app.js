@@ -66,9 +66,11 @@ tabBtns.forEach(btn => {
     authMode = btn.dataset.tab;
     if (authMode === 'register') {
       nameField.classList.remove('hidden');
+      document.getElementById('email-hint').classList.remove('hidden');
       authSubmit.textContent = '新規登録';
     } else {
       nameField.classList.add('hidden');
+      document.getElementById('email-hint').classList.add('hidden');
       authSubmit.textContent = 'ログイン';
     }
     authError.classList.add('hidden');
