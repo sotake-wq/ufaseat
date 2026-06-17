@@ -186,9 +186,9 @@ body {
 
 .preset-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  margin-bottom: 28px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
 }
 
 .preset-tile {
@@ -205,8 +205,8 @@ body {
 }
 
 .preset-tile img {
-  width: 80px;
-  height: 80px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
   background: #f0f4ff;
   display: block;

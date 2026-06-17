@@ -27,38 +27,20 @@ let mySeatId = null;     // 'A1' | null
 let profiles = {};       // { [user_id]: profile }
 let seats = {};          // { [seat_id]: user_id | null }
 
-// ===== AVATAR URL =====
-const AVATAR_PRESETS = [
-  { id: 'short',  label: 'ショート',       hair: 'shortAndRound'   },
-  { id: 'center', label: 'センターパート', hair: 'shortAndStraight' },
-  { id: 'long',   label: 'ロング',          hair: 'longAndLoose'    },
-  { id: 'curly',  label: 'スペインカール', hair: 'curlyAndLong'    },
-  { id: 'wolf',   label: 'ウルフ',          hair: 'shortAndMessy'   },
+// ===== AVATAR =====
+const ANIMAL_PRESETS = [
+  { id: 'dog',    label: '犬',     emoji: '🐕', bg: '#FFF3E0' },
+  { id: 'cat',    label: '猫',     emoji: '🐈', bg: '#E3F2FD' },
+  { id: 'fox',    label: '狐',     emoji: '🦊', bg: '#FBE9E7' },
+  { id: 'panda',  label: 'パンダ', emoji: '🐼', bg: '#F3E5F5' },
+  { id: 'koala',  label: 'コアラ', emoji: '🐨', bg: '#E8F5E9' },
+  { id: 'parrot', label: 'オウム', emoji: '🦜', bg: '#E8EAF6' },
 ];
 
-const FALLBACK_AVATAR = 'https://api.dicebear.com/7.x/adventurer/svg?seed=fallback&scale=80';
-
-// 旧フォーマット(hex or DiceBear名)→ adventurer向けhexに統一
-const SKIN_MAP = {
-  'pale': 'f8d5c2', 'light': 'eac393', 'tanned': 'c68642',
-  'brown': '8d5524', 'dark': '4a2511', 'darkBrown': '614335',
-  'f8d5c2': 'f8d5c2', 'eac393': 'eac393', 'd08b5b': 'c68642',
-  'ae5d29': '8d5524', '614335': '4a2511', 'c68642': 'c68642',
-  '8d5524': '8d5524', '4a2511': '4a2511',
-};
-
-document.addEventListener('error', (e) => {
-  if (e.target.tagName === 'IMG' && e.target.src !== FALLBACK_AVATAR) {
-    e.target.src = FALLBACK_AVATAR;
-  }
-}, true);
-
 function avatarUrl(cfg) {
-  if (!cfg) return FALLBACK_AVATAR;
-  const preset    = AVATAR_PRESETS.find(p => p.id === cfg.preset) || AVATAR_PRESETS[0];
-  const skinColor = SKIN_MAP[cfg.skinColor] || 'f8d5c2';
-  const seed      = cfg.seed || 'ufas';
-  return `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}&hair=${preset.hair}&hairColor=0e0e0e&skinColor=${skinColor}&scale=80`;
+  const animal = ANIMAL_PRESETS.find(a => a.id === (cfg && cfg.animal)) || ANIMAL_PRESETS[0];
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="100" fill="${animal.bg}"/><text x="100" y="145" font-size="110" text-anchor="middle" font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif">${animal.emoji}</text></svg>`;
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 
 // ===== SCREENS =====
@@ -106,7 +88,7 @@ authForm.addEventListener('submit', async (e) => {
     await db.from('profiles').upsert({
       user_id: data.user.id,
       display_name: name,
-      avatar_config: { preset: 'short', skinColor: 'f8d5c2', seed: data.user.id },
+      avatar_config: { animal: 'dog' },
       status: 'in_office',
     });
     me = data.user;
@@ -146,47 +128,27 @@ async function loadMyProfile() {
 }
 
 // ===== AVATAR SETUP =====
-let avatarCfg = { preset: 'short', skinColor: 'f8d5c2' };
+let avatarCfg = { animal: 'dog' };
 
 function showAvatarSetup() {
-  if (myProfile?.avatar_config?.preset) {
-    avatarCfg = { ...myProfile.avatar_config };
-  } else {
-    avatarCfg = { preset: 'short', skinColor: 'f8d5c2' };
-  }
-  avatarCfg.seed = me.id;
-  renderPresetGrid();
-  bindSkinOptions();
+  avatarCfg = { animal: myProfile?.avatar_config?.animal || 'dog' };
+  renderAnimalGrid();
   showScreen('avatar-screen');
 }
 
-function renderPresetGrid() {
+function renderAnimalGrid() {
   const grid = document.getElementById('preset-grid');
   grid.innerHTML = '';
-  AVATAR_PRESETS.forEach(p => {
+  ANIMAL_PRESETS.forEach(a => {
     const tile = document.createElement('div');
-    tile.className = 'preset-tile' + (avatarCfg.preset === p.id ? ' active' : '');
-    tile.dataset.preset = p.id;
-    const url = avatarUrl({ ...avatarCfg, preset: p.id });
-    tile.innerHTML = `<img src="${url}" alt="${p.label}" /><span>${p.label}</span>`;
+    tile.className = 'preset-tile' + (avatarCfg.animal === a.id ? ' active' : '');
+    tile.innerHTML = `<img src="${avatarUrl({ animal: a.id })}" alt="${a.label}" /><span>${a.label}</span>`;
     tile.onclick = () => {
       document.querySelectorAll('.preset-tile').forEach(t => t.classList.remove('active'));
       tile.classList.add('active');
-      avatarCfg.preset = p.id;
+      avatarCfg.animal = a.id;
     };
     grid.appendChild(tile);
-  });
-}
-
-function bindSkinOptions() {
-  const btns = document.querySelectorAll('#opt-skin .color-btn');
-  btns.forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.val === avatarCfg.skinColor);
-    btn.onclick = () => {
-      avatarCfg.skinColor = btn.dataset.val;
-      btns.forEach(b => b.classList.toggle('active', b.dataset.val === avatarCfg.skinColor));
-      renderPresetGrid();
-    };
   });
 }
 
