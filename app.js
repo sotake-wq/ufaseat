@@ -28,7 +28,7 @@ let profiles = {};       // { [user_id]: profile }
 let seats = {};          // { [seat_id]: user_id | null }
 
 // ===== AVATAR URL =====
-const FALLBACK_AVATAR = 'https://api.dicebear.com/7.x/avataaars-neutral/svg?seed=fallback';
+const FALLBACK_AVATAR = 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback&scale=80';
 
 // 全img要素の読み込みエラーを一括でキャッチしてフォールバック表示
 document.addEventListener('error', (e) => {
@@ -39,11 +39,11 @@ document.addEventListener('error', (e) => {
 
 function avatarUrl(cfg) {
   if (!cfg) return FALLBACK_AVATAR;
-  // avataaars-neutral: top=髪型, topColor=髪色, skinColor=肌色
   const top       = cfg.hair      || 'shortFlat';
   const topColor  = cfg.hairColor || '0e0e0e';
   const skinColor = cfg.skinColor || 'f8d5c2';
-  return `https://api.dicebear.com/7.x/avataaars-neutral/svg?seed=${cfg.seed || 'ufas'}&top=${top}&topColor=${topColor}&skinColor=${skinColor}&clothesType=blazerAndShirt&clothesColor=3c4f5c`;
+  // scale=80 で全体が円に収まるよう縮小、clothesType でスーツ統一
+  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${cfg.seed || 'ufas'}&top=${top}&topColor=${topColor}&skinColor=${skinColor}&clothesType=blazerAndShirt&scale=80`;
 }
 
 // ===== SCREENS =====
