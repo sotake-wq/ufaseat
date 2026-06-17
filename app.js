@@ -28,9 +28,16 @@ let profiles = {};       // { [user_id]: profile }
 let seats = {};          // { [seat_id]: user_id | null }
 
 // ===== AVATAR URL =====
-const FALLBACK_AVATAR = 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback&scale=80';
+const AVATAR_PRESETS = [
+  { id: 'short',  label: 'ショート',       top: 'shortFlat',  clothes: 'blazerAndShirt',   clothesColor: 'blue02'  },
+  { id: 'center', label: 'センターパート', top: 'theCaesar',  clothes: 'collarAndSweater', clothesColor: 'gray01'  },
+  { id: 'long',   label: 'ロング',          top: 'straight01', clothes: 'blazerAndSweater', clothesColor: 'black01' },
+  { id: 'curly',  label: 'スペインカール', top: 'curly',      clothes: 'hoodie',           clothesColor: 'heather' },
+  { id: 'wolf',   label: 'ウルフ',          top: 'shortWaved', clothes: 'shirtVNeck',       clothesColor: 'blue01'  },
+];
 
-// 全img要素の読み込みエラーを一括でキャッチしてフォールバック表示
+const FALLBACK_AVATAR = 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback&top[]=shortFlat&topColor[]=black&skinColor[]=pale&clothesType[]=blazerAndShirt&clothesColor[]=blue02&eyes[]=default&eyebrow[]=defaultNatural&mouth[]=smile&scale=80';
+
 document.addEventListener('error', (e) => {
   if (e.target.tagName === 'IMG' && e.target.src !== FALLBACK_AVATAR) {
     e.target.src = FALLBACK_AVATAR;
@@ -39,11 +46,10 @@ document.addEventListener('error', (e) => {
 
 function avatarUrl(cfg) {
   if (!cfg) return FALLBACK_AVATAR;
-  const top       = cfg.hair      || 'shortFlat';
-  const topColor  = cfg.hairColor || '0e0e0e';
-  const skinColor = cfg.skinColor || 'f8d5c2';
-  // scale=80 で全体が円に収まるよう縮小、clothesType でスーツ統一
-  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${cfg.seed || 'ufas'}&top=${top}&topColor=${topColor}&skinColor=${skinColor}&clothesType=blazerAndShirt&scale=80`;
+  const preset    = AVATAR_PRESETS.find(p => p.id === cfg.preset) || AVATAR_PRESETS[0];
+  const skinColor = cfg.skinColor || 'pale';
+  const seed      = cfg.seed || 'ufas';
+  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&top[]=${preset.top}&topColor[]=black&skinColor[]=${skinColor}&clothesType[]=${preset.clothes}&clothesColor[]=${preset.clothesColor}&eyes[]=default&eyebrow[]=defaultNatural&mouth[]=smile&scale=80`;
 }
 
 // ===== SCREENS =====
@@ -91,7 +97,7 @@ authForm.addEventListener('submit', async (e) => {
     await db.from('profiles').upsert({
       user_id: data.user.id,
       display_name: name,
-      avatar_config: { hair:'shortFlat', hairColor:'0e0e0e', skinColor:'f8d5c2', seed: data.user.id },
+      avatar_config: { preset: 'short', skinColor: 'pale', seed: data.user.id },
       status: 'in_office',
     });
     me = data.user;
@@ -131,51 +137,47 @@ async function loadMyProfile() {
 }
 
 // ===== AVATAR SETUP =====
-let avatarCfg = { hair:'shortFlat', hairColor:'0e0e0e', skinColor:'f8d5c2' };
+let avatarCfg = { preset: 'short', skinColor: 'pale' };
 
 function showAvatarSetup() {
-  if (myProfile?.avatar_config) avatarCfg = { ...myProfile.avatar_config };
+  if (myProfile?.avatar_config?.preset) {
+    avatarCfg = { ...myProfile.avatar_config };
+  } else {
+    avatarCfg = { preset: 'short', skinColor: 'pale' };
+  }
   avatarCfg.seed = me.id;
-  renderAvatarPreview();
-  bindAvatarOptions();
+  renderPresetGrid();
+  bindSkinOptions();
   showScreen('avatar-screen');
 }
 
-function renderAvatarPreview() {
-  document.getElementById('avatar-preview').src = avatarUrl(avatarCfg);
-}
-
-function bindAvatarOptions() {
-  bindOptGroup('opt-hair', 'hair');
-  bindColorGroup('opt-hair-color', 'hairColor');
-  bindColorGroup('opt-skin', 'skinColor');
-}
-
-function bindOptGroup(groupId, key) {
-  const btns = document.querySelectorAll(`#${groupId} .opt-btn`);
-  btns.forEach(btn => {
-    if (btn.dataset.val === avatarCfg[key]) btn.classList.add('active');
-    else btn.classList.remove('active');
-    btn.addEventListener('click', () => {
-      btns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      avatarCfg[key] = btn.dataset.val;
-      renderAvatarPreview();
-    });
+function renderPresetGrid() {
+  const grid = document.getElementById('preset-grid');
+  grid.innerHTML = '';
+  AVATAR_PRESETS.forEach(p => {
+    const tile = document.createElement('div');
+    tile.className = 'preset-tile' + (avatarCfg.preset === p.id ? ' active' : '');
+    tile.dataset.preset = p.id;
+    const url = avatarUrl({ ...avatarCfg, preset: p.id });
+    tile.innerHTML = `<img src="${url}" alt="${p.label}" /><span>${p.label}</span>`;
+    tile.onclick = () => {
+      document.querySelectorAll('.preset-tile').forEach(t => t.classList.remove('active'));
+      tile.classList.add('active');
+      avatarCfg.preset = p.id;
+    };
+    grid.appendChild(tile);
   });
 }
 
-function bindColorGroup(groupId, key) {
-  const btns = document.querySelectorAll(`#${groupId} .color-btn`);
+function bindSkinOptions() {
+  const btns = document.querySelectorAll('#opt-skin .color-btn');
   btns.forEach(btn => {
-    if (btn.dataset.val === avatarCfg[key]) btn.classList.add('active');
-    else btn.classList.remove('active');
-    btn.addEventListener('click', () => {
-      btns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      avatarCfg[key] = btn.dataset.val;
-      renderAvatarPreview();
-    });
+    btn.classList.toggle('active', btn.dataset.val === avatarCfg.skinColor);
+    btn.onclick = () => {
+      avatarCfg.skinColor = btn.dataset.val;
+      btns.forEach(b => b.classList.toggle('active', b.dataset.val === avatarCfg.skinColor));
+      renderPresetGrid();
+    };
   });
 }
 

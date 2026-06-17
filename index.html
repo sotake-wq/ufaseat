@@ -49,54 +49,18 @@
   <div id="avatar-screen" class="screen hidden">
     <div class="avatar-card">
       <h2>✨ アバターをつくろう</h2>
-      <p class="sub">あなただけのキャラクターにカスタマイズしよう</p>
+      <p class="sub">スタイルを選んでカスタマイズしよう</p>
 
-      <div class="avatar-preview-wrap">
-        <img id="avatar-preview" src="" alt="アバタープレビュー" />
-      </div>
+      <div class="preset-grid" id="preset-grid"></div>
 
-      <div class="customize-grid">
-        <div class="customize-row">
-          <label>💇 ヘアスタイル</label>
-          <div class="option-group" id="opt-hair">
-            <button class="opt-btn active" data-val="shortFlat">ショート</button>
-            <button class="opt-btn" data-val="shortCurly">くせ毛ショート</button>
-            <button class="opt-btn" data-val="shortWaved">ウェーブショート</button>
-            <button class="opt-btn" data-val="theCaesar">センターパート</button>
-            <button class="opt-btn" data-val="theCaesarAndSidePart">サイドパート</button>
-            <button class="opt-btn" data-val="shavedSides">ツーブロック</button>
-            <button class="opt-btn" data-val="dreads01">ドレッド</button>
-            <button class="opt-btn" data-val="longButNotTooLong">ミディアム</button>
-            <button class="opt-btn" data-val="straight01">ストレートロング</button>
-            <button class="opt-btn" data-val="miaWallace">ボブ</button>
-            <button class="opt-btn" data-val="bun">お団子</button>
-            <button class="opt-btn" data-val="curly">カーリー</button>
-          </div>
-        </div>
-
-        <div class="customize-row">
-          <label>🎨 髪の色</label>
-          <div class="color-group" id="opt-hair-color">
-            <button class="color-btn active" data-val="0e0e0e" style="background:#0e0e0e" title="ブラック"></button>
-            <button class="color-btn" data-val="5c3317" style="background:#5c3317" title="チョコ"></button>
-            <button class="color-btn" data-val="b5651d" style="background:#b5651d" title="ブラウン"></button>
-            <button class="color-btn" data-val="d4a017" style="background:#d4a017" title="ゴールド"></button>
-            <button class="color-btn" data-val="c0c0c0" style="background:#c0c0c0" title="シルバー"></button>
-            <button class="color-btn" data-val="ff69b4" style="background:#ff69b4" title="ピンク"></button>
-            <button class="color-btn" data-val="9b59b6" style="background:#9b59b6" title="パープル"></button>
-            <button class="color-btn" data-val="00bcd4" style="background:#00bcd4" title="ブルー"></button>
-          </div>
-        </div>
-
-        <div class="customize-row">
-          <label>🌸 肌の色</label>
-          <div class="color-group" id="opt-skin">
-            <button class="color-btn active" data-val="f8d5c2" style="background:#f8d5c2"></button>
-            <button class="color-btn" data-val="eac393" style="background:#eac393"></button>
-            <button class="color-btn" data-val="d08b5b" style="background:#d08b5b"></button>
-            <button class="color-btn" data-val="ae5d29" style="background:#ae5d29"></button>
-            <button class="color-btn" data-val="614335" style="background:#614335"></button>
-          </div>
+      <div class="skin-section">
+        <label>🌸 肌の色</label>
+        <div class="color-group" id="opt-skin">
+          <button class="color-btn active" data-val="pale"     style="background:#f8d5c2" title="ライト"></button>
+          <button class="color-btn"        data-val="light"    style="background:#eac393" title="ナチュラル"></button>
+          <button class="color-btn"        data-val="tanned"   style="background:#c68642" title="タン"></button>
+          <button class="color-btn"        data-val="brown"    style="background:#8d5524" title="ブラウン"></button>
+          <button class="color-btn"        data-val="dark"     style="background:#4a2511" title="ダーク"></button>
         </div>
       </div>
 
