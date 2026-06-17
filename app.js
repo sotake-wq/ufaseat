@@ -28,7 +28,7 @@ let profiles = {};       // { [user_id]: profile }
 let seats = {};          // { [seat_id]: user_id | null }
 
 // ===== AVATAR URL =====
-const FALLBACK_AVATAR = 'https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=fallback';
+const FALLBACK_AVATAR = 'https://api.dicebear.com/7.x/avataaars-neutral/svg?seed=fallback';
 
 // 全img要素の読み込みエラーを一括でキャッチしてフォールバック表示
 document.addEventListener('error', (e) => {
@@ -39,10 +39,11 @@ document.addEventListener('error', (e) => {
 
 function avatarUrl(cfg) {
   if (!cfg) return FALLBACK_AVATAR;
-  const hair      = cfg.hair      || 'short01';
-  const hairColor = cfg.hairColor || '0e0e0e';
+  // avataaars-neutral: top=髪型, topColor=髪色, skinColor=肌色
+  const top       = cfg.hair      || 'shortFlat';
+  const topColor  = cfg.hairColor || '0e0e0e';
   const skinColor = cfg.skinColor || 'f8d5c2';
-  return `https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=${cfg.seed || 'ufas'}&hair=${hair}&hairColor=${hairColor}&skinColor=${skinColor}`;
+  return `https://api.dicebear.com/7.x/avataaars-neutral/svg?seed=${cfg.seed || 'ufas'}&top=${top}&topColor=${topColor}&skinColor=${skinColor}&clothesType=blazerAndShirt&clothesColor=3c4f5c`;
 }
 
 // ===== SCREENS =====
@@ -90,7 +91,7 @@ authForm.addEventListener('submit', async (e) => {
     await db.from('profiles').upsert({
       user_id: data.user.id,
       display_name: name,
-      avatar_config: { hair:'short01', hairColor:'0e0e0e', skinColor:'f8d5c2', seed: data.user.id },
+      avatar_config: { hair:'shortFlat', hairColor:'0e0e0e', skinColor:'f8d5c2', seed: data.user.id },
       status: 'in_office',
     });
     me = data.user;
@@ -130,7 +131,7 @@ async function loadMyProfile() {
 }
 
 // ===== AVATAR SETUP =====
-let avatarCfg = { hair:'short01', hairColor:'0e0e0e', skinColor:'f8d5c2' };
+let avatarCfg = { hair:'shortFlat', hairColor:'0e0e0e', skinColor:'f8d5c2' };
 
 function showAvatarSetup() {
   if (myProfile?.avatar_config) avatarCfg = { ...myProfile.avatar_config };
