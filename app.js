@@ -28,13 +28,21 @@ let profiles = {};       // { [user_id]: profile }
 let seats = {};          // { [seat_id]: user_id | null }
 
 // ===== AVATAR URL =====
+const FALLBACK_AVATAR = 'https://api.dicebear.com/7.x/lorelei/svg?seed=fallback';
+
+// 全img要素の読み込みエラーを一括でキャッチしてフォールバック表示
+document.addEventListener('error', (e) => {
+  if (e.target.tagName === 'IMG' && e.target.src !== FALLBACK_AVATAR) {
+    e.target.src = FALLBACK_AVATAR;
+  }
+}, true);
+
 function avatarUrl(cfg) {
-  if (!cfg) return 'https://api.dicebear.com/7.x/adventurer/svg?seed=default';
-  const style      = cfg.style      || 'adventurer';
-  const hair       = cfg.hair       || 'short01';
-  const hairColor  = cfg.hairColor  || '0e0e0e';
-  const skinColor  = cfg.skinColor  || 'f8d5c2';
-  return `https://api.dicebear.com/7.x/${style}/svg?seed=${cfg.seed || 'ufas'}&hair=${hair}&hairColor=${hairColor}&skinColor=${skinColor}`;
+  if (!cfg) return FALLBACK_AVATAR;
+  const hair      = cfg.hair      || 'short01';
+  const hairColor = cfg.hairColor || '0e0e0e';
+  const skinColor = cfg.skinColor || 'f8d5c2';
+  return `https://api.dicebear.com/7.x/lorelei/svg?seed=${cfg.seed || 'ufas'}&hair=${hair}&hairColor=${hairColor}&skinColor=${skinColor}`;
 }
 
 // ===== SCREENS =====
@@ -82,7 +90,7 @@ authForm.addEventListener('submit', async (e) => {
     await db.from('profiles').upsert({
       user_id: data.user.id,
       display_name: name,
-      avatar_config: { style:'adventurer', hair:'short01', hairColor:'0e0e0e', skinColor:'f8d5c2', seed: data.user.id },
+      avatar_config: { hair:'short01', hairColor:'0e0e0e', skinColor:'f8d5c2', seed: data.user.id },
       status: 'in_office',
     });
     me = data.user;
@@ -122,7 +130,7 @@ async function loadMyProfile() {
 }
 
 // ===== AVATAR SETUP =====
-let avatarCfg = { style:'adventurer', hair:'short01', hairColor:'0e0e0e', skinColor:'f8d5c2' };
+let avatarCfg = { hair:'short01', hairColor:'0e0e0e', skinColor:'f8d5c2' };
 
 function showAvatarSetup() {
   if (myProfile?.avatar_config) avatarCfg = { ...myProfile.avatar_config };
@@ -137,8 +145,7 @@ function renderAvatarPreview() {
 }
 
 function bindAvatarOptions() {
-  bindOptGroup('opt-style', 'style');
-  bindOptGroup('opt-hair',  'hair');
+  bindOptGroup('opt-hair', 'hair');
   bindColorGroup('opt-hair-color', 'hairColor');
   bindColorGroup('opt-skin', 'skinColor');
 }
