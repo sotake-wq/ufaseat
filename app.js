@@ -76,12 +76,8 @@ authForm.addEventListener('submit', async (e) => {
 
   if (authMode === 'register') {
     if (!name) { showError('表示名を入力してください'); return; }
-    const { data, error } = await db.auth.signUp({ email, password, options: { emailRedirectTo: 'https://ufaseat.vercel.app' } });
+    const { data, error } = await db.auth.signUp({ email, password });
     if (error) { showError(error.message); return; }
-    if (!data.session) {
-      showError('確認メールを送信しました。メールのリンクをクリックしてからログインしてください。（届かない場合はSupabaseのメール確認設定をオフにしてください）');
-      return;
-    }
     // Create profile
     await db.from('profiles').upsert({
       user_id: data.user.id,
