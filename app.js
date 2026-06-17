@@ -28,7 +28,7 @@ let profiles = {};       // { [user_id]: profile }
 let seats = {};          // { [seat_id]: user_id | null }
 
 // ===== AVATAR URL =====
-const FALLBACK_AVATAR = 'https://api.dicebear.com/7.x/lorelei/svg?seed=fallback';
+const FALLBACK_AVATAR = 'https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=fallback';
 
 // 全img要素の読み込みエラーを一括でキャッチしてフォールバック表示
 document.addEventListener('error', (e) => {
@@ -42,7 +42,7 @@ function avatarUrl(cfg) {
   const hair      = cfg.hair      || 'short01';
   const hairColor = cfg.hairColor || '0e0e0e';
   const skinColor = cfg.skinColor || 'f8d5c2';
-  return `https://api.dicebear.com/7.x/lorelei/svg?seed=${cfg.seed || 'ufas'}&hair=${hair}&hairColor=${hairColor}&skinColor=${skinColor}`;
+  return `https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=${cfg.seed || 'ufas'}&hair=${hair}&hairColor=${hairColor}&skinColor=${skinColor}`;
 }
 
 // ===== SCREENS =====
