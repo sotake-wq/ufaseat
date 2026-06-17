@@ -159,13 +159,6 @@ function bindOptGroup(groupId, key) {
       btns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       avatarCfg[key] = btn.dataset.val;
-      // スタイルボタンにプリセット髪型が指定されていれば適用
-      if (key === 'style' && btn.dataset.presetHair) {
-        avatarCfg.hair = btn.dataset.presetHair;
-        document.querySelectorAll('#opt-hair .opt-btn').forEach(b => {
-          b.classList.toggle('active', b.dataset.val === avatarCfg.hair);
-        });
-      }
       renderAvatarPreview();
     });
   });
@@ -185,15 +178,26 @@ function bindColorGroup(groupId, key) {
   });
 }
 
-document.getElementById('save-avatar').addEventListener('click', async () => {
-  await db.from('profiles').upsert({
-    user_id: me.id,
-    display_name: myProfile?.display_name || 'ユーザー',
-    avatar_config: avatarCfg,
-    status: myProfile?.status || 'in_office',
-  });
-  await loadMyProfile();
-  startApp();
+document.getElementById('save-avatar').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  if (btn.disabled) return;
+  btn.disabled = true;
+  const originalText = btn.textContent;
+  btn.textContent = '保存中...';
+  try {
+    await db.from('profiles').upsert({
+      user_id: me.id,
+      display_name: myProfile?.display_name || 'ユーザー',
+      avatar_config: avatarCfg,
+      status: myProfile?.status || 'in_office',
+    });
+    await loadMyProfile();
+    startApp();
+  } catch (err) {
+    console.warn('Save avatar error', err);
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
 });
 
 // ===== MAIN APP =====
@@ -278,7 +282,7 @@ function renderSeats() {
     el.className = 'seat' + (isMe ? ' seat-mine' : ' seat-occupied-other');
     el.innerHTML = `
       <div class="seat-label">${seatId}</div>
-      <img class="seat-avatar-img" src="${imgSrc}" alt="${name}" />
+      <img class="seat-avatar-img" src="${imgSrc}" alt="${name}" onerror="this.onerror=null;this.src='${FALLBACK_AVATAR}'" />
       <div class="seat-user-name">${name}</div>
       <div class="status-badge ${status}"></div>
     `;
@@ -295,13 +299,21 @@ function renderSeats() {
 function renderMemberList() {
   const list = document.getElementById('member-list');
   list.innerHTML = '';
-  Object.values(profiles).forEach(prof => {
+  // ステータス順（着席中→離席中→会議中→テレワーク）でソート
+  const statusOrder = { in_office: 0, away: 1, meeting: 2, telework: 3 };
+  const sorted = Object.values(profiles).sort((a, b) => {
+    const oa = statusOrder[a.status] ?? 99;
+    const ob = statusOrder[b.status] ?? 99;
+    if (oa !== ob) return oa - ob;
+    return (a.display_name || '').localeCompare(b.display_name || '', 'ja');
+  });
+  sorted.forEach(prof => {
     const mySeat = Object.entries(seats).find(([, uid]) => uid === prof.user_id)?.[0];
     const item = document.createElement('div');
     item.className = 'member-item';
     item.innerHTML = `
       <div class="member-avatar">
-        <img src="${avatarUrl(prof.avatar_config)}" alt="${prof.display_name}" />
+        <img src="${avatarUrl(prof.avatar_config)}" alt="${prof.display_name}" onerror="this.onerror=null;this.src='${FALLBACK_AVATAR}'" />
         <div class="member-badge ${prof.status || 'in_office'}"></div>
       </div>
       <div class="member-info">

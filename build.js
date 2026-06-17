@@ -1,6 +1,12 @@
-// Generates config.js with Supabase credentials from environment variables.
-// Runs at Vercel build time (and locally via: node build.js)
 const fs = require('fs');
+
+// .env ファイルを手動で読み込む
+if (fs.existsSync('.env')) {
+  fs.readFileSync('.env', 'utf8').split('\n').forEach(line => {
+    const [key, ...rest] = line.trim().split('=');
+    if (key && rest.length) process.env[key] = rest.join('=');
+  });
+}
 
 const url = process.env.SUPABASE_URL || '';
 const key = process.env.SUPABASE_ANON_KEY || '';
